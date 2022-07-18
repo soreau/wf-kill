@@ -71,6 +71,7 @@ void wf_kill_view::deactivate()
     {
         o->deactivate_plugin(grab_interfaces[o]);
         grab_interfaces[o]->ungrab();
+        grab_interfaces[o].reset();
     }
 
     idle_set_cursor.run_once([this] ()
