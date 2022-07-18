@@ -67,10 +67,9 @@ void wf_kill_view::send_view_info()
 
 void wf_kill_view::deactivate()
 {
-
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
-	o->deactivate_plugin(grab_interfaces[o]);
+        o->deactivate_plugin(grab_interfaces[o]);
         grab_interfaces[o]->ungrab();
     }
 
@@ -91,18 +90,16 @@ wf_kill_view::wf_kill_view()
         LOGE("Failed to create wf_kill_view interface");
         return;
     }
-
-    for (auto& o : wf::get_core().output_layout->get_outputs())
-    {
-        grab_interfaces[o] = std::make_unique<wf::plugin_grab_interface_t> (o);
-        grab_interfaces[o]->name = "wf-info";
-        grab_interfaces[o]->capabilities = wf::CAPABILITY_GRAB_INPUT;
-    }
 }
 
 wf_kill_view::~wf_kill_view()
 {
     wl_global_destroy(manager);
+
+    for (auto& o : wf::get_core().output_layout->get_outputs())
+    {
+        grab_interfaces[o].reset();
+    }
 }
 
 static void view_kill(struct wl_client *client, struct wl_resource *resource)
@@ -111,6 +108,10 @@ static void view_kill(struct wl_client *client, struct wl_resource *resource)
 
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
+        wd->grab_interfaces[o] = std::make_unique<wf::plugin_grab_interface_t> (o);
+        wd->grab_interfaces[o]->name = "wf-info";
+        wd->grab_interfaces[o]->capabilities = wf::CAPABILITY_GRAB_INPUT;
+
         if (!o->activate_plugin(wd->grab_interfaces[o]))
         {
             continue;
