@@ -42,6 +42,12 @@
       </description>
       <arg name="view_pid" type="int" summary="view client PID"/>
     </event>
+
+    <event name="cancel">
+      <description summary="Cancel operation">
+	The operation has been canceled.
+      </description>
+    </event>
   </interface>
 </protocol>
 

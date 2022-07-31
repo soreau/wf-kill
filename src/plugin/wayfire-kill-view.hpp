@@ -32,7 +32,8 @@ class wf_kill_view
   public:
     std::vector<wl_resource*> client_resources;
     void send_view_info();
-    void deactivate();
+    void send_cancel();
+    void deactivate(uint32_t b);
     wf::wl_idle_call idle_set_cursor;
     std::map<wf::output_t*, std::unique_ptr<wf::plugin_grab_interface_t>> grab_interfaces;
     wf_kill_view();

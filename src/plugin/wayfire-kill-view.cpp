@@ -30,6 +30,7 @@
 #include <wayfire/output.hpp>
 #include <wayfire/output-layout.hpp>
 #include <wayfire/nonstd/wlroots-full.hpp>
+#include <linux/input-event-codes.h>
 
 #include "wayfire-kill-view.hpp"
 #include "wayfire-kill-view-server-protocol.h"
@@ -65,7 +66,16 @@ void wf_kill_view::send_view_info()
     }
 }
 
-void wf_kill_view::deactivate()
+void wf_kill_view::send_cancel()
+{
+
+    for (auto r : client_resources)
+    {
+        wf_kill_view_base_send_cancel(r);
+    }
+}
+
+void wf_kill_view::deactivate(uint32_t b)
 {
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
@@ -74,10 +84,16 @@ void wf_kill_view::deactivate()
         grab_interfaces[o].reset();
     }
 
-    idle_set_cursor.run_once([this] ()
+    idle_set_cursor.run_once([=] ()
     {
-        wf::get_core().set_cursor("default");
-        send_view_info();
+        if (b == BTN_LEFT)
+        {
+            send_view_info();
+        }
+        else
+        {
+            send_cancel();
+        }
     });
 }
 
@@ -107,6 +123,7 @@ static void view_kill(struct wl_client *client, struct wl_resource *resource)
 {
     wf_kill_view *wd = (wf_kill_view*)wl_resource_get_user_data(resource);
 
+    bool set_cursor = false;
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
         wd->grab_interfaces[o] = std::make_unique<wf::plugin_grab_interface_t> (o);
@@ -122,17 +139,22 @@ static void view_kill(struct wl_client *client, struct wl_resource *resource)
         {
             if (s == WL_POINTER_BUTTON_STATE_PRESSED)
             {
-                wd->deactivate();
+                wd->deactivate(b);
             }
         };
 
         wd->grab_interfaces[o]->grab();
+
+        set_cursor = true;
     }
 
-    wd->idle_set_cursor.run_once([wd] ()
+    if (set_cursor)
     {
-        wf::get_core().set_cursor("crosshair");
-    });
+        wd->idle_set_cursor.run_once([wd] ()
+        {
+            wf::get_core().set_cursor("pirate");
+        });
+    }
 }
 
 static const struct wf_kill_view_base_interface wf_kill_view_impl =

@@ -25,6 +25,8 @@
 
 #include <iostream>
 #include <string.h>
+#include <sys/types.h>
+#include <signal.h>
 
 #include "wf-kill.hpp"
 
@@ -61,6 +63,13 @@ static void receive_view_pid(void *data,
 
     if (view_pid > 0)
     {
+        if (wfk->send_kill)
+        {
+            kill(view_pid, SIGKILL);
+            std::cout << "Sent SIGKILL to PID: " << view_pid << std::endl;
+            wfk->running = 0;
+            return;
+        }
         std::cout << "Client PID: " << view_pid << std::endl;
     } else
     {
@@ -69,11 +78,18 @@ static void receive_view_pid(void *data,
     wfk->running = 0;
 }
 
+static void cancel(void *data,
+    struct wf_kill_view_base *wf_kill_view_base)
+{
+    exit(0);
+}
+
 static struct wf_kill_view_base_listener kill_view_listener {
 	.view_pid = receive_view_pid,
+	.cancel = cancel,
 };
 
-WfKill::WfKill()
+WfKill::WfKill(int argc, char *argv[])
 {
     display = wl_display_connect(NULL);
     if (!display)
@@ -101,6 +117,7 @@ WfKill::WfKill()
     wf_kill_view_base_add_listener(wf_kill_view_manager,
         &kill_view_listener, this);
 
+    send_kill = (argc > 1 && !strcmp(argv[1], "-k"));
     running = 1;
     while(running)
         wl_display_dispatch(display);
@@ -115,7 +132,7 @@ WfKill::~WfKill()
 
 int main(int argc, char *argv[])
 {
-    WfKill();
+    WfKill(argc, argv);
 
     return 0;
 }

@@ -30,10 +30,11 @@
 class WfKill
 {
   public:
-    WfKill();
+    WfKill(int argc, char *argv[]);
     ~WfKill();
 
     int running;
+    int send_kill;
     wl_display *display;
     wf_kill_view_base *wf_kill_view_manager;
 };

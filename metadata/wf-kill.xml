@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <wayfire>
 	<plugin name="wf-kill">
-		<_short>Wayfire Kill View Protocol</_short>
+		<_short>Kill View Protocol</_short>
 		<_long>Support for sending xdg close to a view and returning the pid.</_long>
 		<category>Utility</category>
 	</plugin>

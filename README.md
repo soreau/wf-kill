@@ -13,7 +13,8 @@ sudo ninja -C build install
 
 Enable Wayfire Kill View Protocol plugin 'wf-kill'
 
-Run `wf-kill` and click on a window
+Run `wf-kill` and click on a window. This will send the close event to the client.
+Run `wf-kill -k` to also send SIGKILL to the client.
 
 ## Example
 
