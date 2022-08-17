@@ -127,7 +127,7 @@ static void view_kill(struct wl_client *client, struct wl_resource *resource)
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
         wd->grab_interfaces[o] = std::make_unique<wf::plugin_grab_interface_t> (o);
-        wd->grab_interfaces[o]->name = "wf-info";
+        wd->grab_interfaces[o]->name = "wf-kill";
         wd->grab_interfaces[o]->capabilities = wf::CAPABILITY_GRAB_INPUT;
 
         if (!o->activate_plugin(wd->grab_interfaces[o]))
