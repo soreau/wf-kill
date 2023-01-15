@@ -24,28 +24,34 @@
 
 
 #include <wayfire/plugin.hpp>
-#include <wayfire/singleton-plugin.hpp>
 #include <wayfire/signal-definitions.hpp>
 #include <wayfire/util/log.hpp>
 
 #include "plugin/wayfire-kill-view.hpp"
 
-class wf_kill
+class wf_kill : public wf::plugin_interface_t, wf::pointer_interaction_t
 {
   public:
     std::unique_ptr<wf_kill_view> wf_kill_view_ptr = nullptr;
 
-    wf_kill()
+    void init()
     {
         wf_kill_view_ptr = std::make_unique<wf_kill_view>();
+        wf_kill_view_ptr->set_base_ptr(this);
     }
 
-    ~wf_kill()
+    void handle_pointer_button(const wlr_pointer_button_event& event) override
+    {
+        if (event.state == WLR_BUTTON_PRESSED)
+        {
+            wf_kill_view_ptr->end_grab(event.button);
+        }
+    }
+
+    void fini()
     {
         wf_kill_view_ptr.reset();
     }
 };
 
-class wf_kill_singleton : public wf::singleton_plugin_t<wf_kill> {};
-
-DECLARE_WAYFIRE_PLUGIN(wf_kill_singleton);
+DECLARE_WAYFIRE_PLUGIN(wf_kill);

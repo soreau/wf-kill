@@ -35,6 +35,11 @@
 #include "wayfire-kill-view.hpp"
 #include "wayfire-kill-view-server-protocol.h"
 
+wf::plugin_activation_data_t grab_interface{
+    .name = "wf-kill",
+    .capabilities = wf::CAPABILITY_GRAB_INPUT,
+};
+
 static void bind_manager(wl_client *client, void *data,
     uint32_t version, uint32_t id);
 
@@ -79,9 +84,9 @@ void wf_kill_view::deactivate(uint32_t b)
 {
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
-        o->deactivate_plugin(grab_interfaces[o]);
-        grab_interfaces[o]->ungrab();
-        grab_interfaces[o].reset();
+        o->deactivate_plugin(&grab_interface);
+        input_grabs[o]->ungrab_input();
+        input_grabs[o].reset();
     }
 
     idle_set_cursor.run_once([=] ()
@@ -95,6 +100,16 @@ void wf_kill_view::deactivate(uint32_t b)
             send_cancel();
         }
     });
+}
+
+void wf_kill_view::end_grab(uint32_t b)
+{
+    deactivate(b);
+}
+
+void wf_kill_view::set_base_ptr(wf::pointer_interaction_t *base)
+{
+    this->base = base;
 }
 
 wf_kill_view::wf_kill_view()
@@ -115,7 +130,7 @@ wf_kill_view::~wf_kill_view()
 
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
-        grab_interfaces[o].reset();
+        input_grabs[o].reset();
     }
 }
 
@@ -126,24 +141,14 @@ static void view_kill(struct wl_client *client, struct wl_resource *resource)
     bool set_cursor = false;
     for (auto& o : wf::get_core().output_layout->get_outputs())
     {
-        wd->grab_interfaces[o] = std::make_unique<wf::plugin_grab_interface_t> (o);
-        wd->grab_interfaces[o]->name = "wf-kill";
-        wd->grab_interfaces[o]->capabilities = wf::CAPABILITY_GRAB_INPUT;
+        wd->input_grabs[o] = std::make_unique<wf::input_grab_t> (grab_interface.name, o, nullptr, wd->base, nullptr);
 
-        if (!o->activate_plugin(wd->grab_interfaces[o]))
+        if (!o->activate_plugin(&grab_interface))
         {
             continue;
         }
 
-        wd->grab_interfaces[o]->callbacks.pointer.button = [=] (uint32_t b, uint32_t s)
-        {
-            if (s == WL_POINTER_BUTTON_STATE_PRESSED)
-            {
-                wd->deactivate(b);
-            }
-        };
-
-        wd->grab_interfaces[o]->grab();
+        wd->input_grabs[o]->grab_input(wf::scene::layer::OVERLAY);
 
         set_cursor = true;
     }

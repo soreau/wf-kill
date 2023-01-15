@@ -22,20 +22,24 @@
  * SOFTWARE.
  */
 
-
 #pragma once
+
+#include <wayfire/plugins/common/input-grab.hpp>
 
 class wf_kill_view
 {
     wl_global *manager;
 
   public:
+    wf::pointer_interaction_t *base;
+    void set_base_ptr(wf::pointer_interaction_t *base);
     std::vector<wl_resource*> client_resources;
     void send_view_info();
     void send_cancel();
     void deactivate(uint32_t b);
     wf::wl_idle_call idle_set_cursor;
-    std::map<wf::output_t*, std::unique_ptr<wf::plugin_grab_interface_t>> grab_interfaces;
+    std::map<wf::output_t*, std::unique_ptr<wf::input_grab_t>> input_grabs;
+    void end_grab(uint32_t b);
     wf_kill_view();
     ~wf_kill_view();
 };
