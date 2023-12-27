@@ -53,10 +53,9 @@ void wf_kill_view::send_view_info()
     pid_t pid = 0;
     wlr_surface *wlr_surface = view->get_wlr_surface();
 #if WF_HAS_XWAYLAND
-    bool is_xwayland_surface = wlr_surface_is_xwayland_surface(wlr_surface);
-    if (is_xwayland_surface)
+    if (auto xwayland_surface = wlr_xwayland_surface_try_from_wlr_surface(wlr_surface))
     {
-        pid = wlr_xwayland_surface_from_wlr_surface(wlr_surface)->pid;
+        pid = xwayland_surface->pid;
     } else
 #endif
     {
