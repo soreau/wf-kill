@@ -25,7 +25,6 @@
 
 #include <wayfire/plugin.hpp>
 #include <wayfire/signal-definitions.hpp>
-#include <wayfire/util/log.hpp>
 
 #include "plugin/wayfire-kill-view.hpp"
 
@@ -42,7 +41,7 @@ class wf_kill : public wf::plugin_interface_t, wf::pointer_interaction_t
 
     void handle_pointer_button(const wlr_pointer_button_event& event) override
     {
-        if (event.state == WLR_BUTTON_PRESSED)
+        if (event.state == WL_POINTER_BUTTON_STATE_PRESSED)
         {
             wf_kill_view_ptr->end_grab(event.button);
         }
