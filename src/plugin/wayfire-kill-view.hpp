@@ -25,6 +25,7 @@
 #pragma once
 
 #include <wayfire/plugins/common/input-grab.hpp>
+#include <wayfire/util.hpp>
 
 class wf_kill_view
 {
